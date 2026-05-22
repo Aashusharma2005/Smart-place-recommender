@@ -19,7 +19,21 @@ function Saved() {
 
       const key = `savedPlaces_${u.email}`;
       const data = JSON.parse(localStorage.getItem(key)) || [];
-      setSavedPlaces(data);
+
+      // 🔥 IMAGE FIX
+      const fixedData = data.map((place) => ({
+        ...place,
+        image:
+          place.image &&
+          place.image !== "undefined" &&
+          place.image !== "null"
+            ? place.image
+            : `https://source.unsplash.com/600x400/?${encodeURIComponent(
+                place.Name
+              )},india`,
+      }));
+
+      setSavedPlaces(fixedData);
       setLoading(false);
     };
 
@@ -51,7 +65,7 @@ function Saved() {
 
   // REMOVE
   const removePlace = (e, name) => {
-    e.stopPropagation(); // 🔥 IMPORTANT FIX
+    e.stopPropagation();
 
     if (!user) return;
     if (!window.confirm("Remove this place?")) return;
@@ -115,12 +129,14 @@ function Saved() {
         <div style={grid}>
           {filtered.map((place, index) => {
             let price = place["Entrance Fee in INR"];
+
             price =
               price === "Free" || price === "0" || price === 0
                 ? 0
                 : Number(price) || 0;
 
             let rating = Number(place["Google review rating"]);
+
             if (isNaN(rating)) rating = 4.0;
 
             return (
@@ -135,12 +151,14 @@ function Saved() {
                 {/* IMAGE */}
                 <div style={imgContainer}>
                   <img
-                    src={
-                      place.image ||
-                      "https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg"
-                    }
+                    src={place.image}
                     alt={place.Name}
                     style={img}
+                    onError={(e) => {
+                      e.target.src = `https://source.unsplash.com/600x400/?${encodeURIComponent(
+                        place.Name
+                      )},tourism`;
+                    }}
                   />
 
                   <div style={overlay}></div>
@@ -154,7 +172,10 @@ function Saved() {
                 {/* INFO */}
                 <div style={clickArea}>
                   <div style={info}>
-                    <span>💰 {price === 0 ? "Free" : `₹ ${price}`}</span>
+                    <span>
+                      💰 {price === 0 ? "Free" : `₹ ${price}`}
+                    </span>
+
                     <span>⭐ {rating}</span>
                   </div>
                 </div>
@@ -274,7 +295,7 @@ const overlay = {
   position: "absolute",
   inset: 0,
   background: "rgba(0,0,0,0.4)",
-  pointerEvents: "none", // 🔥 FIX
+  pointerEvents: "none",
 };
 
 const imgText = {
